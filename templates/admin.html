@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include 'header.html' %}
+
+<body>
+    <script>
+
+     
+
+        
+        $(function () {
+            $('.ui.fluid.search.dropdown').dropdown({
+                fullTextSearch: "exact"
+            });
+            $('.ui.dropdown.selection').dropdown();
+        });
+        $(function () {
+            $('.message .close')
+                .on('click', function () {
+                    $(this)
+                        .closest('.message')
+                        .transition('fade')
+                        ;
+                });
+        });
+
+    </script>
+    {% include 'menu.html' %}
+    <div class="ui top attached tabular menu" style="margin-bottom: 10px">
+        <a class="item active" data-tab="user">
+            User Management
+        </a>
+        <a class="item" href="/list_allprojects/">
+            Score Projects
+          </a>
+         
+          
+
+        
+    </div>
+    
+
+  
+    <div class="ui tab active" data-tab="user" style="padding-top:5px;">
+        <form class="ui form" action="/admin" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <div class="ui field">
+                <div class="ui labeled input">
+                    <div class="ui label">
+                        <i class="user icon"></i>User:
+                    </div>
+                    <div style="min-width: 15em; max-width: 30%;">
+                        <select class="ui fluid search dropdown" name="user_id">
+                            <option value="">State</option>
+                            {% set users = db.select_all_users() %}
+                            {% for user in users %}
+                            <option value="{{ user['id'] }}">
+                                {{ (user['fname']) }} {{ (user['lname']) }} - {{ (user['email']) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="field" style="width: 20%;">
+                <label>New password:</label>
+                <div class="field">
+                    <input type="password" name="password1" placeholder="" minlength="8">
+                </div>
+            </div>
+            <div class="field" style="width: 20%;">
+                <label>Confirm password:</label>
+                <div class="field">
+                    <input type="password" name="password2" placeholder="" minlength="8">
+                </div>
+            </div>
+            <button type="submit" class="ui primary button">
+                <i class="save icon"></i>
+                Save
+            </button>
+            {% if error_type is defined and error_type=='reset_password' %}
+            <div class="ui error message visible">
+                <i class="close icon"></i>
+                <div class="header">
+                    There were some errors:
+                </div>
+                <ul class="list" style="width:20%;">
+                    {% for error in errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% elif success_type is defined and success_type=='reset_password' %}
+            <div class="ui success message visible" style="width:20%;">
+                <i class="close icon"></i>
+                <div class="header">
+                    {{ success_message }}
+                </div>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if errors %}
+    <div class="ui error message visible">
+        <i class="close icon"></i>
+        <div class="header">
+            There were some errors:
+        </div>
+        <ul class="list">
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {% elif success_message is defined and success_message != '' %}
+    <div class="ui success message visible">
+        <i class="close icon"></i>
+        <div class="header">
+            {{success_message}}
+        </div>
+    </div>
+    {% endif %}
+
+    
+    
+</body>
+
+</html>

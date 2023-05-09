@@ -1,0 +1,60 @@
+<div class="ui inverted menu header_menu orange" id="header_menu">
+    <a class="item" href="/">ህብር{% if current_project is defined %}:
+        {{ (current_project['name']) }}{% endif %}</a>
+    
+    <a class="item" href="/about">About</a>
+    {% if session.get('id') %}
+    <a class="item" href="{{ url_for('routes.documentation_manual') }}" target="_blank">Documentation</a>
+    {% endif %}
+    {% set darkmode=(request.cookies.get('darkmode')=='1') %}
+    <a class="item" style="cursor: pointer" onclick="{% if darkmode %}document.cookie='darkmode=0; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/';{% else %}document.cookie='darkmode=1;expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/';{% endif %}document.location.reload();"><i class="ui icon {% if darkmode %}yellow sun{% else %}white moon{% endif %}"></i></a>
+    
+    <div class="right menu">
+        {% if session.get('id') %}
+            
+            <a class="item" id="favorite_project" style="cursor: pointer" {% if session.get('current_user')['favorite'] %}href="/project/{{ session.get('current_user')['favorite'] }}/"{% endif %} title="Favorite project"><i class="ui star icon"></i></a>
+            <div class="ui dropdown item">
+                <i class="travel icon"></i>
+                Projects
+                <i class="dropdown icon"></i>
+                <div class="menu">
+                    <a class="item" href="/projects/"><i class="list icon"></i>List</a>
+                    <div class="divider"></div>
+                    <a class="item" href="/new_project"><i class="plus icon"></i> Add new</a>
+                </div>
+            </div>
+            <div class="ui dropdown item">
+                <i class="users icon"></i>Teams
+                <i class="dropdown icon"></i>
+                <div class="menu">
+                    {% for team in db.get_all_teams() %}
+                        <a class="item" href="/team/{{ team['id'] }}/"><i
+                                class="share icon"></i>{{ (team['name']) }}</a>
+                    {% endfor %}
+                    <div class="divider"></div>
+                    <a class="item" href="/create_team"><i class="plus icon"></i> Add new</a>
+                </div>
+            </div>
+        {% endif %}
+        <div class="ui dropdown item">
+            <i class="settings icon"></i>Profile
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                {% if not session.get('id') %}
+                    <a class="item" href="/login"><i class="sign in alternate icon"></i>Login</a>
+                    <a class="item" href="/register"><i class="plus icon"></i>Register</a>
+                {% else %}
+                {% if session.get('current_user')['admin'] == 1 %}
+                    <a class="item" href="/admin"><i class="star icon"></i>Site Admin</a>
+                    <div class="divider"></div>
+                    <a class="item" href="/view_badges"><i class="star icon"></i>Badegs</a>
+                    <div class="divider"></div>
+                {% endif %}
+                    <a class="item" href="/profile"><i class="edit icon"></i>Edit</a>
+                    <div class="divider"></div>
+                    <a class="item" href="/logout"><i class="sign out alternate icon"></i>Logout</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

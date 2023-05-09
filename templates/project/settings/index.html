@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include 'header.html' %}
+
+<body>
+    <div id="segment_id">
+        {% include 'menu.html' %}
+        <div class="ui grid">
+            <div class="ui column" style="width: 75px; padding-top: 50px;">
+                {% include 'project/sidebar.html' %}
+            </div>
+            <script>
+                function delete_prompt(func, message) {
+                    if (confirm(message))
+                        return true;
+                    return false;
+                };
+
+                $(function () {
+                    $('#rangestart').calendar({
+                        type: 'date',
+                        endCalendar: $('#rangeend'),
+                        formatter: {
+                            date: function (date, settings) {
+                                if (!date) return '1/1/1970';
+                                var day = date.getDate();
+                                var month = date.getMonth() + 1;
+                                var year = date.getFullYear();
+                                return day + '/' + month + '/' + year;
+                            }
+                        },
+                        default: '1/1/1970'
+                    });
+                    $('#rangeend').calendar({
+                        type: 'date',
+                        startCalendar: $('#rangestart'),
+                        formatter: {
+                            date: function (date, settings) {
+                                if (!date) return '1/1/3000';
+                                var day = date.getDate();
+                                var month = date.getMonth() + 1;
+                                var year = date.getFullYear();
+                                return day + '/' + month + '/' + year;
+                            }
+                        }
+                    });
+                });
+
+                $(function () {
+                    $('.ui.fluid.search.dropdown').dropdown({
+                        fullTextSearch: "exact"
+                    });
+                    $('.ui.dropdown.selection').dropdown();
+                });
+
+                $(function () {
+                    $('.ui.checkbox').checkbox();
+                });
+
+                $(function () {
+                    $('.message .close')
+                        .on('click', function () {
+                            $(this)
+                                .closest('.message')
+                                .transition('fade')
+                                ;
+                        });
+                });
+
+                function edit_project_form(form_obj) {
+
+                    action_str = form_obj.submitted;
+                    if (action_str === 'Archive') {
+                        return delete_prompt(this, 'Are you sure to archive project?');
+                    } else if (action_str === 'Activate') {
+                        return delete_prompt(this, 'Are you sure to activate project?');
+                    } else if (action_str === 'Update') {
+                        return delete_prompt(this, 'Are you sure to update project?');
+                    } else if (action_str === 'Delete') {
+                        project_original_name = $('#old_project_name')[0].value;
+                        project_name = prompt("If you want to delete project \"" + project_original_name + "\", input project name into this field:");
+
+                        if (project_name === null) {
+                            return false;
+                        }
+
+                        return project_original_name === project_name.toString();
+
+                        $('.ui.modal')
+                            .modal({
+                                closable: false,
+                                onDeny: function () {
+                                    file_next();
+                                    return false;
+                                },
+                                onApprove: function () {
+                                    file_upload();
+                                    return false;
+                                }
+                            })
+                            .modal('show')
+                            ;
+                    } else {
+                        return false;
+                    }
+                }
+
+                function add_to_favorite() {
+
+                    $.ajax({
+                        url: "/project/{{ current_project['id'] }}/settings/favorite",
+                        type: "POST",
+                        data:
+                        {
+                            csrf_token: "{{ csrf_token() }}"
+                        },
+                        success: function (data, textStatus, jqXHR) {
+                            $('body').toast({
+                                class: 'success',
+                                position: 'bottom right',
+                                message: 'Added to favorite!'
+                            });
+
+                            $('#favorite_project')[0].href = "/project/{{ current_project['id'] }}/";
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                        }
+                    });
+                }
+
+            </script>
+            <style>
+
+            </style>
+            {% set project_member = db.select_user_by_id(current_user['id']) %}
+
+
+
+
+            <div class="ui column" style="width: calc(100% - 75px)">
+                {% if current_project['admin_id'] == current_user['id'] or current_user['admin'] == 1 %}
+                <h1 class="ui dividing header">Settings</h1>
+                <div class="ui container" style="width: 100%">
+                    <form class="ui form" method="post" action="/project/{{ current_project['id'] }}/settings/"
+                        onsubmit="return edit_project_form(this)">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <div class="ui grid">
+                            <div class="eight wide column">
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label">
+                                            <i class="travel icon"></i>Project name:
+                                        </div>
+                                        <input id="old_project_name" type="hidden"
+                                            value="{{ (current_project['name']) }}">
+                                        <input type="text" name="name" required placeholder="Project name"
+                                            value="{{ (current_project['name']) }}">
+                                    </div>
+                                </div>
+
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 135px;">
+                                            <i class="sticky note outline icon"></i>Description:
+                                        </div>
+                                        <textarea rows="2" name="description"
+                                            placeholder="Project description">{{ (current_project['description']) }}</textarea>
+                                    </div>
+                                </div>
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 135px;">
+                                            <i class="crosshairs icon"></i>Scope:
+                                        </div>
+                                        <textarea rows="2" name="scope"
+                                            placeholder="*.site.org, 127.0.0.1/24">{{ (current_project['scope']) }}</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 135px;">
+                                            <i class="crosshairs icon"></i>Out of Scope:
+                                        </div>
+                                        <textarea rows="2" name="out_of_scope"
+                                            placeholder="*.site.org, 127.0.0.1/24">{{ (current_project['out_of_scope']) }}</textarea>
+                                    </div>
+                                </div>
+
+                                {% if current_user['admin'] != 1 %}
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label">
+                                            <i class="user icon"></i>Team Lead:
+                                        </div>
+                                        {% set users = db.select_all_users() %}
+                                        {% for user in users %}
+                                        {% if user['id'] == current_project['admin_id'] %}
+                                        <input type="hidden" name="admin_id" readonly placeholder="-"
+                                            value="{{ user['id'] }}">
+                                        <div class="ui fluid dropdown selection">
+                                            <div class="text">
+                                                {{ ' '.join([user['fname'], '-', user['email']]) }}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 122px;">
+                                            <i class="user icon"></i>Team Lead:
+                                        </div>
+                                        <select class="ui fluid search dropdown" name="admin_id">
+                                            <option value="current_project['admin_id']">State</option>
+                                            {% set users = db.select_all_users() %}
+                                            {% for user in users %}
+                                            <option value="{{ user['id'] }}" {% if
+                                                user['id']==current_project['admin_id'] %} selected {% endif %}>{{
+                                                (user['fname']) }}
+                                                - {{ (user['email']) }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if current_user['admin'] != 1 %}
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 135px;">
+                                            <i class="setting icon"></i>Project Type:
+                                        </div>
+                                        <input type="text" name="project_type" readonly
+                                            value="{{ current_project['project_type'] }}">
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 135px;">
+                                            <i class="setting icon"></i>Project Type:
+                                        </div>
+                                        <select class="ui dropdown selection" name="project_type">
+                                            <option value="Pentest" {% if current_project['project_type']=='Pentest'
+                                                %}selected{% endif %}>Pentest
+                                            </option>
+                                            <option value="Red Team" {% if current_project['project_type']=='Red Team'
+                                                %}selected{% endif %}>Red Teaming Engagement
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="ui field">
+                                    <div class="ui checkbox">
+                                        <input type="checkbox" name="archive" value="1" {% if
+                                            current_project['auto_archive']==1 %} checked {% endif %}>
+                                        <label>Auto archive project after finish date</label>
+                                    </div>
+                                </div>
+
+                                <div class="two fields">
+                                    <div class="field">
+                                        <label>Start date</label>
+                                        <div class="ui calendar" id="rangestart">
+                                            <div class="ui input left icon">
+                                                <i class="calendar icon"></i>
+                                                <input type="text" name="start_date"
+                                                    value="{{ format_date(current_project['start_date'],'%m/%d/%Y') }}"
+                                                    placeholder="Start">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="field">
+                                        <label>End date</label>
+                                        <div class="ui calendar" id="rangeend">
+                                            <div class="ui input left icon">
+                                                <i class="calendar icon"></i>
+                                                <input type="text" name="end_date" id="end_date"
+                                                    value="{{ format_date(current_project['end_date'],'%m/%d/%Y') }}"
+                                                    placeholder="End">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="eight wide column">
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 122px;">
+                                            <i class="users icon"></i>Teams:
+                                        </div>
+                                        <select class="ui fluid search dropdown" multiple="" name="teams">
+                                            <option value="">State</option>
+                                            {% set teams = db.get_all_teams() %}
+                                            {% for team in teams %}
+                                            <option value="{{ team['id'] }}" {% if team['id'] in
+                                                current_project['teams'] %} selected {% endif %}>{{ (team['name']) }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 122px;">
+                                            <i class="user icon"></i>Users:
+                                        </div>
+                                        <select class="ui fluid search dropdown" multiple="" name="users">
+                                            <option value="">State</option>
+                                            {% set users = db.select_all_users() %}
+                                            {% for user in users %}
+                                            <option value="{{ user['id'] }}" {% if user['id'] in
+                                                current_project['testers'] or user['id']==current_project['admin_id'] %}
+                                                selected {% endif %}>{{
+                                                (user['fname']) }} {{ (user['lname']) }}
+                                                - {{ (user['email']) }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {% if current_user['admin'] != 1 %}
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label">
+                                            <i class="heading icon"></i>Project Classification:
+                                        </div>
+                                        <input type="text" name="classification" placeholder="-" readonly
+                                            value="{{ current_project['classification'] }}">
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label">
+                                            <i class="heading icon"></i>Project Classification:
+                                        </div>
+                                        <select class="ui fluid dropdown selection" name="classification">
+                                            <option value="Confidential" {% if current_project['level']=='Confidential'
+                                                %}selected{% endif %}>Confidential
+                                            </option>
+                                            <option value="Secret" {% if current_project['classification']=='Secret'
+                                                %}selected{% endif %}>Secret
+                                            </option>
+                                            <option value="Top Secret" {% if
+                                                current_project['classification']=='Top Secret' %}selected{% endif %}>
+                                                Top Secret
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if current_user['admin'] != 1 %}
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 135px;">
+                                            <i class="setting icon"></i>Level:
+                                        </div>
+                                        <input type="text" name="level" placeholder="-" readonly
+                                            value="{{ current_project['level'] }}">
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 135px;">
+                                            <i class="settings icon"></i>Level:
+                                        </div>
+                                        <select class="ui fluid dropdown selection" name="level">
+                                            <option value=1 {% if current_project['level']==1 %}selected{% endif %}>
+                                                Level 1
+                                            </option>
+                                            <option value=2 {% if current_project['level']==2 %}selected{% endif %}>
+                                                Level 2
+                                            </option>
+                                            <option value=3 {% if current_project['level']==3 %}selected{% endif %}>
+                                                Level 3
+                                            </option>
+                                            <option value=4 {% if current_project['level']==4 %}selected{% endif %}>
+                                                Level 4
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 122px;">
+                                            <i class="folder icon"></i>Folder:
+                                        </div>
+                                        <div class="ui input">
+                                            <input list="folders_list" placeholder="Folder name" name="folder"
+                                                type="text" value="{{ current_project['folder'] }}">
+                                        </div>
+                                        <datalist id="folders_list">
+                                            {% for folder_name in db.select_user_folders(current_user['id']) %}
+                                            <option value="{{ folder_name }}">Folder: {{ folder_name }}</option>
+                                            {% endfor %}
+                                        </datalist>
+                                    </div>
+                                </div>
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label">
+                                            <i class="heading icon"></i>Report title:
+                                        </div>
+                                        <input type="text" name="report_title" placeholder="Official report name"
+                                            value="{{ current_project['report_title'] }}">
+                                    </div>
+                                </div>
+                                {% if current_user['admin'] != 1 %}
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label">
+                                            <i class="heading icon"></i>Rating:
+                                        </div>
+
+                                        <input type="text" name="rating" placeholder="-" readonly value={{
+                                            current_project['rating'] }}>
+
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="ui field">
+                                    <div class="ui labeled input">
+                                        <div class="ui label" style="width: 135px;">
+                                            <i class="setting icon"></i>Rating:
+                                        </div>
+                                        <select class="ui fluid dropdown selection" name="rating">
+                                            <option value=0 {% if current_project['rating']==0 %}selected{% endif %}>-
+                                            </option>
+                                            <option value=1 {% if current_project['rating']==1 %}selected{% endif %}>
+                                                1
+                                            </option>
+                                            <option value=2 {% if current_project['rating']==2 %}selected{% endif %}>
+                                                2
+                                            </option>
+                                            <option value=3 {% if current_project['rating']==3 %}selected{% endif %}>
+                                                3
+                                            </option>
+                                            <option value=4 {% if current_project['rating']==4 %}selected{% endif %}>
+                                                4
+                                            </option>
+                                            <option value=5 {% if current_project['rating']==5 %}selected{% endif %}>
+                                                5
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {% endif %}
+                                {% if errors is defined and errors %}
+                                <div class="ui error message visible">
+                                    <i class="close icon"></i>
+                                    <div class="header">
+                                        There were some errors with project creation:
+                                    </div>
+                                    <ul class="list">
+                                        {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button class="ui button yellow" style="cursor: pointer" type="button"
+                            onclick="add_to_favorite();"><i class="ui star icon"></i></button>
+                        <button type="submit" class="ui purple button" onclick="this.form.submitted=this.value;"
+                            name="action" value="Update"><i class="plus icon"></i>Update</button>
+                        {% if current_project['status'] == 0 %}
+                        <button type="submit" class="ui button green" onclick="this.form.submitted=this.value;"
+                            name="action" value="Activate"><i class="play circle icon"></i>Activate
+                        </button>
+                        {% else %}
+                        <button type="submit" class="ui button red" onclick="this.form.submitted=this.value;"
+                            name="action" value="Archive"><i class="archive icon"></i>Archive
+                        </button>
+                        {% endif %}
+                        <button type="submit" class="ui button black" onclick="this.form.submitted=this.value;"
+                            name="action" value="Delete"><i class="trash icon"></i>Delete
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="ui grid">
+
+
+                    <div class="eight wide column">
+                        <form class="ui form">
+                            <div class="field">
+                                <label>Project Name:</label>
+                                <div class="field">
+                                    <input type="text" name="name" readonly value="{{ (current_project['name'])}}">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Description:</label>
+                                <div class="field">
+                                    <input type="text" name="description" placeholder="Project Description" readonly
+                                        value="{{ (current_project['description']) }}">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Scope:</label>
+                                <div class="field">
+                                    <input type="text" name="scope" value="{{ (current_project['scope']) }}" readonly>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Team Lead:</label>
+                                <div class="field">
+                                    {% set admin_name = db.select_user_by_id(current_project['admin_id'])[0] %}
+                                    <input type="text" name="admin_id" readonly
+                                        value="{{ admin_name['fname'] }} - {{ admin_name['email'] }}">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Project Type:</label>
+                                <div class="field">
+                                    <input type="text" name="project_type" value="{{ current_project['project_type'] }}" readonly>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Teams:</label>
+                                <div class="field">
+                                    {% set team_check = db.get_all_teams() %}
+                                    {% for team in team_check %}
+                                    {% if team['id'] in current_project['teams'] %}
+                                    <input type="text" name="teams" value="{{ team['name'] }}" readonly>
+                                    {% endif %}
+                                    {% endfor %}
+
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Users:</label>
+                                <div class="field">
+                                    {% set project_participants = db.select_all_users() %}
+                                    {% for participants in project_participants %}
+                                    {% if participants['id'] in current_project['testers'] %}
+                                    <input type="text" name="users"
+                                        value="{{ participants['fname'] }} - {{ participants['email'] }}" readonly>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="eight wide column">
+                        <form class="ui form">
+                            <div class="field">
+                                <label>Project Classification:</label>
+                                <div class="field">
+                                    <input type="text" name="classification"
+                                        value="{{ (current_project['classification']) }}" readonly>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Level:</label>
+                                <div class="field">
+                                    <input type="text" name="level" value="{{ (current_project['level']) }}" readonly>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Folder:</label>
+                                <div class="field">
+                                    <input type="text" name="folder_name" value="{{ (current_project['folder']) }}"
+                                        readonly placeholder="Folder Name">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Report Title:</label>
+                                <div class="field">
+                                    <input type="text" name="report_title"
+                                        value="{{ (current_project['report_title']) }}" readonly>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Rating:</label>
+                                <div class="field">
+                                    {% if current_project['rating'] != 0 %}
+                                    <input type="text" name="rating" value="{{ (current_project['rating']) }}" readonly>
+                                    {% else %}
+                                    <input type="text" name="rating" placeholder="-" readonly>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Start Date:</label>
+                                <div class="field">
+                                    <input type="text" name="classification"
+                                        value="{{ format_date(current_project['start_date'],'%m/%d/%Y') }}" readonly>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>End Date:</label>
+                                <div class="field">
+                                    <input type="text" name="classification"
+                                        value="{{ format_date(current_project['end_date'],'%m/%d/%Y') }}" readonly>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    {% if errors is defined and errors %}
+                    <div class="ui error message visible">
+                        <i class="close icon"></i>
+                        <div class="header">
+                            There were some errors with project creation:
+                        </div>
+                        <ul class="list">
+                            {% for error in errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                </div>
+                {% endif %}
+                {% include 'footer.html' %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

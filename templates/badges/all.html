@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include 'header.html' %}
+  {% include 'menu.html' %}
+  <head>
+    <title>Project Details</title>
+    <style>
+        .badge {
+          width: 20%;
+          box-sizing: border-box;
+          padding: 5px;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+        }
+      
+        .badge img {
+          margin-right: 10px;
+        }
+      
+        .badges-list {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+      
+        h2 {
+          text-align: center;
+        }
+        .delete-badge-btn {
+        background-color: red;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        margin-left: 10px;
+        cursor: pointer;
+        margin-left: 10px;
+      }
+        
+        .add-badge-btn {
+          float: right;
+          margin-top: 10px;
+        }
+      </style>
+      
+  </head>
+  <body>
+    <div class="row">
+      <div class="col-md-6 text-center">
+        <div class="text-right">
+            <form method="GET" action="{{ url_for('routes.create_badge') }}">
+              <button type="submit" class="btn btn-primary add-badge-btn">Add Badge</button>
+            </form>
+        </div>
+        <h2>Special Badges</h2>
+        <div class="badges-list">
+          {% for badge in badges if badge.admin_only == 1 %}
+            <div class="badge">
+              <img src="{{ url_for('static', filename=badge.image) }}" alt="{{ badge.name }}" />
+              <div>
+                <h3>{{ badge.name }}</h3>
+                <form method="POST" action="{{ url_for('routes.delete_badge', badge_id=badge.id) }}" onsubmit="return confirm('Are you sure you want to delete this badge?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="badge_id" value="{{ badge.id }}">
+                    <button type="submit" class="delete-badge-btn">Delete</button>
+                  </form>
+                  
+
+                
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+  
+      <div class="col-md-6 text-center">
+        <h2>Score Badges</h2>
+        <div class="badges-list">
+          {% for badge in badges if badge.admin_only == 0 %}
+            <div class="badge">
+              <img src="{{ url_for('static', filename=badge.image) }}" alt="{{ badge.name }}" />
+              <div>
+                <h3>{{ badge.name }}</h3>
+                <p>Score: {{ badge.score }}</p>
+                <form method="POST" action="{{ url_for('routes.delete_badge', badge_id=badge.id) }}" onsubmit="return confirm('Are you sure you want to delete this badge?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="badge_id" value="{{ badge.id }}">
+                    <button type="submit" class="delete-badge-btn">Delete</button>
+                  </form>
+                  
+
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

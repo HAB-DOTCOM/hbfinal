@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include 'header.html' %}
+
+    {% include 'menu.html' %}
+    <head>
+        <title>Project Details</title>
+      </head>
+      <body>
+     
+        
+
+        <form action="{{ url_for('routes.score_projects', project_id=project_id) }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <table>
+            
+          <div class="ui tab active" data-tab="active" style="padding-top:5px;">
+            <table id="online-projects" class="ui table" style="width:100%">
+             <thead>
+              <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Project Level</th>
+                <th>Rate</th>
+                <th>status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for tester_username in testers_usernames %}
+              <tr>
+                <td>{{ tester_username["fname"] }}</td>
+                <td>{{ tester_username["lname"] }}</td>
+                <td>{{ project_level }}</td>
+                <td>
+                  <select name="rates[]" class="form-select" aria-label="Default select example">
+                    <option selected>select Rate</option>
+                    {% for i in range(1,6) %}
+                    
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>{{ tester_username["status"] }}</td>  
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <button type="submit"
+          class="ui  button primary" >Submit
+        </button>
+        {% if  success_type=='Badge_Added' %}
+            <div class="ui success message visible" style="width:20%;">
+                <i class="close icon"></i>
+                <div class="header">
+                    {{ success }}
+                </div>
+            </div>
+            {% endif %}
+     
+ 
+          
+        </form>
+      </div>
+      </body>
+</html>

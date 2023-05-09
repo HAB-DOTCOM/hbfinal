@@ -1,0 +1,1 @@
+<!DOCTYPE foo [<!ENTITY xeeg7gdd0 "my6t6"><!ENTITY xeeg7gdd1 "&xeeg7gdd0;&xeeg7gdd0;"><!ENTITY xeeg7gdd2 "&xeeg7gdd1;&xeeg7gdd1;">]></code> <script> alert(document.url)&xeeg7gdd2;</script><code>

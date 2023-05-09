@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include 'header.html' %}
+
+{% include 'menu.html' %}
+<head>
+    <title>Project Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+        }
+
+        .row {
+            margin: 50px auto;
+            max-width: 800px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .special-badge-label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        input[type=text], input[type=file], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type=checkbox] {
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        button[type=submit] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+        }
+
+        button[type=submit]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1>Create New Badge</h1>
+        <form method="POST" action="{{ url_for('routes.new_badge') }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+            {{ form.name.label }}
+            {{ form.name }}
+
+            {{ form.image.label }}
+            {{ form.image }}
+
+            <label for="admin_only" class="special-badge-label">Special Badge:</label>
+            {{ form.admin_only(class="form-check-input") }}
+
+            <div id="score-div" style="display: block;">
+                {{ form.score.label }}
+                {{ form.score }}
+            </div>
+            <button type="submit" class="btn btn-primary">Create Badge</button>
+        </form>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#admin_only').change(function() {
+            if (this.checked) {
+                $('#score-div').hide();
+            } else {
+                $('#score-div').show();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

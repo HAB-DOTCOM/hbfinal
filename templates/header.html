@@ -1,0 +1,71 @@
+<head>
+    <meta charset="UTF-8">
+    <title>{% if tab_name %}{{ (tab_name) }}{% else %}ህብር{% endif %}</title>
+    <link href="/static/images/favicon.ico" rel="shortcut icon" type="image/x-icon">
+
+
+    {% if external_css %}
+        
+    {% else %}
+        {% if not one_file_css %}
+            <link rel="stylesheet" type="text/css" href="/static/css/semantic.min.css">
+            <link rel="stylesheet" type="text/css" href="/static/css/datatables.min.css">
+            <link rel="stylesheet" type="text/css" href="/static/css/highlight.css">
+        {% else %}
+            <link rel="stylesheet" type="text/css" href="/static/css/all.css">
+        {% endif %}
+    {% endif %}
+
+    {% if external_js %}
+        
+    {% else %}
+        {% if not one_file_js %}
+            <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+            <script type="text/javascript" src="/static/js/jquery.address.min.js"></script>
+            <script type="text/javascript" src="/static/js/semantic.min.js"></script>
+            <script type="text/javascript" src="/static/js/datatables.min.js"></script>
+            <script type="text/javascript" src="/static/js/highlight.min.js"></script>
+        {% else %}
+            <script type="text/javascript" src="/static/js/all.js"></script>
+        {% endif %}
+    {% endif %}
+
+    {% set darkmode=(request.cookies.get('darkmode')=='1') %}
+    {% if darkmode %}
+        <link rel="stylesheet" type="text/css" href="/static/css/darkmode.css">
+    {% endif %}
+    <style>
+        body {
+            padding: 1em;
+        }
+
+        .ui.menu:last-child {
+            margin-bottom: 110px;
+        }
+
+        div.ui.stackable.grid {
+            width: 100%
+        }
+    </style>
+
+    <script>
+        //global settings
+        $.fn.dropdown.settings.preserveHTML = false;
+
+        $(document)
+            .ready(function () {
+                $('.ui.menu .ui.dropdown').dropdown({
+                    on: 'hover'
+                });
+                $('.ui.menu a.item')
+                    .on('click', function () {
+                        $(this)
+                            .addClass('active')
+                            .siblings()
+                            .removeClass('active')
+                        ;
+                    })
+                ;
+            });
+    </script>
+</head>

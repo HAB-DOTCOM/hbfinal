@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include 'header.html' %}
+<body>
+{% include 'menu.html' %}
+<div align="center" style="margin-top: 200px;">
+    <i class="exclamation triangle massive icon"></i>
+    <h1>500 ERROR PAGE</h1>
+    <a class="ui button blue" href="javascript:history.back()"><i class="reply icon"></i>Return to previous page</a>
+    
+</div>
+{% include 'footer.html' %}
+</body>
+</html>
+<div id="table-container" class="hidden">
+    <table class="ui celled table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Project Name</th>
+          <th>Level</th>
+          <th>Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in project_users %}
+          <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ project.name }}</td>
+            <td>{{ project.level }}</td>
+            <td>
+              <select id="user-{{ user.id }}-rate">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button class="ui primary button" id="update-total-score-button">Update Total Score</button>
+  </div>

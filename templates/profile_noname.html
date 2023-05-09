@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include 'header.html' %}
+
+<body>
+    <script>
+    </script>
+    <style>
+        .ui.selection.dropdown {
+            min-width: 100%;
+        }
+
+        .ui.menu {
+            margin-top: 0px;
+            
+        }
+        
+    </style>
+    {% include 'menu.html' %}
+
+
+
+    <div class="ui equal height grid" style="height: 100%">
+        <div class="two column row" style="height: 100%">
+            <div class=" column" style="height: 100%; width: 30% !important;">
+
+                <h2>Basic Profile</h2>
+                <form class="ui form">
+                    <div class="field">
+                        <label>Email:</label>
+                        <div class="field">
+                            <input type="email" name="email" placeholder="iljashaposhnikov@gmail.com" readonly
+                                value="{{ (user_data['email'])}}">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>First name:</label>
+                        <div class="field">
+                            <input type="text" name="email" placeholder="Ivan" readonly
+                                value="{{ (user_data['fname']) }}">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Second name:</label>
+                        <div class="field">
+                            <input type="text" name="email" placeholder="Ivanov" value="{{ (user_data['lname'])}}"
+                                readonly>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Score :</label>
+                        <div class="field">
+                            <input type="text" name="email" placeholder="Ivanov" value="{{ (user_data['total_score'])}}"
+                                readonly>
+                        </div>
+                    </div>
+                    
+
+                </form>
+                <br>
+                <div class="column" style="height: 100%">
+                    <h2>Projects Completed</h2>
+                    <form class="ui form">
+                        {% set projects = db.select_user_projects(user_data['id']) %}
+                        <div class="field">
+                            <ul>
+                                {% for project in projects %}
+                                {% if project['status'] == 0 %}
+                                
+                                    <a href="/project/{{ project['id'] }}">
+                                        <button class="ui button black" style="cursor: pointer;  margin-bottom: 14px;"
+                                            type="button">
+                                            {{ project['name'] }} -
+                                            {% if project['admin_id'] == user_data['id'] %}
+                                            Team Lead
+                                            {% else %}
+                                            Tester
+                                            {% endif %}
+                                        </button>
+                                    </a>
+                                
+                                {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+    
+                    </form>
+                   
+    
+                    <h2>Active Projects</h2>
+                    <form class="ui form">
+                        {% set projects = db.select_user_projects(user_data['id']) %}
+                        <div class="field">
+                            <ul>
+                                {% for project in projects %}
+                                {% if project['status'] == 1 %}
+                                
+                                    <a href="/project/{{ project['id'] }}">
+                                        <button class="ui button black" style="cursor: pointer;  margin-bottom: 14px;"
+                                            type="button">
+                                            {{ project['name'] }} -
+                                            {% if project['admin_id'] == user_data['id'] %}
+                                            Team Lead
+                                            {% else %}
+                                            Tester
+                                            {% endif %}
+                                        </button>
+                                    </a>
+                                
+                                {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </form>
+    
+    
+                    
+    
+                </div>
+            </div>
+          
+            <style>
+                                .badges-grid {
+                                  display: flex;
+                                  flex-wrap: wrap;
+                                  margin: 0 auto;
+                                  float: right;
+                                }
+                              
+                                .badge-row {
+                                  display: flex;
+                                  margin-bottom: 20px;
+                                  flex-direction: row;
+                                  width: 100%;
+                                }
+                              
+                                .badge-column {
+                                  width: 45%;
+                                  display: flex;
+                                  flex-direction: column;
+                                  align-items: center;
+                                  justify-content: center;
+                                }
+                              
+                                .badge-img-wrapper {
+                                  display: flex;
+                                  flex-direction: row;
+                                  align-items: center;
+                                  justify-content: center;
+                                  margin-bottom: 5px;
+                                }
+                              
+                                .badge-img {
+                                  width: 60%;
+                                  height: auto;
+                                  opacity: 0.5;
+                                  margin-left: 10px;
+                                }
+                                .center-heading h3 {
+                      text-align: center;
+                  }
+
+           
+
+            </style>
+         
+    <div class="column" style="height: 100%; width: 70% !important;">
+      <h3 > Score Badges</h3>
+                            
+      <div class="badges-grid column">
+        {% if badges|length > 0 %}
+          {% set badge_count = 0 %}
+          <div class="badge-row">
+            {% for badge in badges %}
+              {% if badge['admin_only'] == 0 %}
+                <div class="badge-column">
+                  <div class="badge-img-wrapper">
+                    {% if user_data['total_score'] >= badge['score'] %}
+                      <img src="{{ url_for('static', filename=badge['image']) }}" class="badge-img" alt="{{ badge['name'] }}" style="opacity: 1;">
+                    {% else %}
+                      <img src="{{ url_for('static', filename=badge['image']) }}" class="badge-img" alt="{{ badge['name'] }}">
+                    {% endif %}
+                    <span style="margin-left: 10px; font-size: 12px;">{{ badge['name'] }}</span>
+                  </div>
+                </div>
+                {% set badge_count = badge_count + 1 %}
+                {% if loop.index % 4 == 0 %}
+                  </div><div class="badge-row">
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+      
+      
+      
+              <div class="badges-grid column">
+                <h3>Special Badges</h3>
+                {% if user_badges|length > 0 %}
+                    {% for badge_row in user_badges|batch(3) %}
+                        <div class="badge-row">
+                            {% for badge in badge_row %}
+                              
+                                    <div class="badge-column">
+                                        <div class="badge-img-wrapper">
+                                            {% if badge['status'] == 1 %}
+                                            <img src="{{ url_for('static', filename=badge.image) }}" class="badge-img" alt="{{ badge['name'] }}" style="opacity: 1;">
+                                          {% else %}
+                                            <img src="{{ url_for('static', filename=badge.image) }}" class="badge-img" alt="{{ badge['name'] }}" style="opacity: 0.5;">
+                                          {% endif %}
+                                          <span style="margin-left: 10px; font-size: 12px;">{{ badge['name'] }}</span>
+                                          <hr>
+                                            {% if user.admin == 1 and badge['status'] == 0 %}
+                                                <form method="post" action="{{ url_for('routes.update_user_badge_status', user_id=user_data['id'], badge_id=badge['badge_id']) }}" style="display:inline-block;">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                                    <button type="submit" class="btn btn-info">Give Badge</button>
+                                                </form>        
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                              
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+        
+
+                
+      </div>
+  
+  
+  
+  
+</div>
+ </div>
+    
+
+
+    {% include 'footer.html' %}
+</body>
+
+
+</html>

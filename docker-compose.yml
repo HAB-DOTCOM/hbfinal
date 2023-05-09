@@ -1,0 +1,18 @@
+version: '3'
+services:
+  hibir:
+        image: hibir:1.0
+        container_name: hibir
+        ports:
+          - 443:443
+        volumes:
+            - hibir-backup:/pcf/backups
+            - hibir-files:/pcf/static/files
+            - hibir-config:/pcf/configuration
+volumes:
+  hibir-backup:
+    external: true
+  hibir-files:
+    external: true
+  hibir-config:
+    external: true

