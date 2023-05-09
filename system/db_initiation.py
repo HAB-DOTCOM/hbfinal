@@ -56,7 +56,6 @@ def create_db():
                          password text,
                          favorite text default '',
                          admin int default 0,
-                         total_score INTEGER DEFAULT 0,
                          pass_reset int default 1
                           );''')
     except psycopg2.errors.DuplicateTable:
@@ -446,26 +445,5 @@ def create_db():
     except psycopg2.errors.DuplicateTable:
         print('Error with creating table IssueRules')
     conn.commit()
-    try:
-        cursor.execute('''CREATE TABLE IF NOT EXISTS Badges (
-            id TEXT PRIMARY KEY,
-            name INTEGER,
-            image TEXT,
-            score INTEGER,
-            admin_only BOOLEAN DEFAULT 'False'
-        )''')
-    except psycopg2.errors.DuplicateTable:
-        print('Error with creating table Badges')
-    conn.commit()
 
-    try:
-        cursor.execute('''CREATE TABLE IF NOT EXISTS User_Badges (
-            id TEXT PRIMARY KEY,
-            user_id TEXT,
-            badge_id TEXT,
-            status INTEGER
-        )''')
-    except psycopg2.errors.DuplicateTable:
-        print('Error with creating table User_Badges')
-    conn.commit()
     return True

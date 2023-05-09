@@ -546,7 +546,7 @@
         <div class="ui tab" data-tab="logs" style="height: 100%">
             <div class="ui input" style="min-width: 100%; height:calc(100% - 50px)">
                 <textarea rows="2" style="min-width: 100%; height:100%;">
-{% set log_dict = db.get_log_by_team_id(current_team['id'])[:100] %}{% for row in log_dict %}{% set current_project = db.select_projects(row['project_id']) %}{{ format_date(row['date'],'%d-%m-%Y %H:%M:%S') }} - Project: {% if current_project -%}{{ (current_project[0]['name']) }} {% endif %} User:{{ (db.select_user_by_id(row['user_id'])[0]['email']) }} -- {{ (row['description']) }}
+{% set log_dict = db.get_log_by_team_id(current_team['id'])[:100] %}{% for row in log_dict %}{% set current_project = db.select_projects(row['project']) %}{{ format_date(row['date'],'%d-%m-%Y %H:%M:%S') }} - Project: {% if current_project -%}{{ (current_project[0]['name']) }} {% endif %} User:{{ (db.select_user_by_id(row['user_id'])[0]['email']) }} -- {{ (row['description']) }}
 {% endfor %}</textarea>
             </div>
             <a href="/team/{{ current_team['id'] }}/logs" target="_blank" rel="noopener noreferrer" class="ui button blue" style="margin-top:10px;"><i class="share icon"></i>Full log</a>

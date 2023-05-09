@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include 'header.html' %}
+<link href="/static/css/chats.css" rel="stylesheet" type="text/css">
+<body>
+<div id="segment_id">
+    {% include 'menu.html' %}
+
+    <div class="ui grid">
+        <div class="ui column" style="width: 75px; padding-top: 50px;">
+            {% include 'project/sidebar.html' %}
+        </div>
+        <div class="three wide column"></div>
+        {% if current_project is defined %}
+
+        
+        <div class="nine wide column scrolling content">
+        <!-- <div class="four column centered row"> -->
+            
+        <h1>
+            Notifications
+        </h1>
+
+            <div class="ui fluid raised link card" >
+                <div class="content">
+                <img class="floated mini ui avatat image" src="/static/images/icon_mini_good.png">
+             
+                <a class="header" href="#">Steve Jobes</a>
+                
+                <div class="meta">
+                    New Member
+                </div>
+                <div class="description">
+                    {%set hi = db.view_all_not(current_project['id'])%}
+                    {%for h in hi%}
+                    <!-- {%for y in h%} -->
+                     <!-- {{h}} -->
+                   
+                     <!-- {%endfor%} -->
+    
+                    {%endfor%}
+                    
+                </div>
+                </div>
+                <div  class="ui bottom attached button">
+                    <i class="right fliated ui close icon"></i>
+               
+                </div>
+            </div>
+            <div class="ui fluid raised link card" id = "theNotification"> 
+
+            </div>
+
+        </div>
+        <div class="three wide column"></div>
+        {%endif%}
+
+    <div>
+       
+
+</div>
+
+
+</body>
+</html>
+{% include 'footer.html' %}
+
+<script>
+    const file_notifications = document.getElementById('theNotification');
+    function htmlspecialchars(html) {
+                    var div = document.createElement('div');
+                    div.innerText = html;
+                    return div.innerHTML;
+                }
+    
+    function Filenotifications(userName,Reference,time,fileName, projectId, color) {
+       
+     
+            const notHTML = `
+            
+    
+            <a class="ui fluid raised link  ${color} card"  href="/project/${htmlspecialchars(projectId)}/${htmlspecialchars(Reference)}/" >
+                
+                <div class="content">
+                    <img class="floated mini ui avatat image" src="/static/images/icon_mini_good.png">
+                    <div class="header">
+                        ${htmlspecialchars(userName)}
+    
+                    </div>
+                    ${htmlspecialchars(time)}
+                    <div class="meta">
+                        
+                    </div>
+                    <div class="description">
+                        new :${htmlspecialchars(Reference)} <b>  : ${htmlspecialchars(fileName)} </b> 
+                       
+                       
+                    </div>
+                </div>
+            </a>
+                   
+                
+            
+                        
+                        
+                    
+    `;
+    file_notifications.insertAdjacentHTML('afterbegin', notHTML);
+    // file_notifications.forEach(div => {
+    //     if (div.id == Dir ) {
+    //         div.insertAdjacentHTML('beforebegin', notHTML);
+    //     }
+        
+    // });
+
+        }
+
+</script>
+<!-- Public Key:
+BDnXnISH3LQKMyw_OSBnQ6qAoiR48rje2bAbX2viw-FKXzpTwAnNt6MIwYnsK5QBWq7GEMBuEbuQbpMBjlJuQAE
+
+Private Key:
+eT3p70ShUhsZ8B3fMnVk9xDYva8-ZGMWTuMFJDy4qRE -->
+
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script> -->

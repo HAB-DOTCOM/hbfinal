@@ -1,60 +1,752 @@
+<!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous"> -->
+<!-- {% for current_chat in notify_arr %} -->
+                <!-- {% endfor %}   -->
+
+
+
 <div class="ui inverted menu header_menu orange" id="header_menu">
     <a class="item" href="/">ህብር{% if current_project is defined %}:
         {{ (current_project['name']) }}{% endif %}</a>
-    
+
     <a class="item" href="/about">About</a>
     {% if session.get('id') %}
     <a class="item" href="{{ url_for('routes.documentation_manual') }}" target="_blank">Documentation</a>
     {% endif %}
+
     {% set darkmode=(request.cookies.get('darkmode')=='1') %}
-    <a class="item" style="cursor: pointer" onclick="{% if darkmode %}document.cookie='darkmode=0; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/';{% else %}document.cookie='darkmode=1;expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/';{% endif %}document.location.reload();"><i class="ui icon {% if darkmode %}yellow sun{% else %}white moon{% endif %}"></i></a>
-    
+    <a class="item" style="cursor: pointer"
+        onclick="{% if darkmode %}document.cookie='darkmode=0; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/';{% else %}document.cookie='darkmode=1;expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/';{% endif %}document.location.reload();"><i
+            class="ui icon {% if darkmode %}yellow sun{% else %}white moon{% endif %}"></i></a>
+
     <div class="right menu">
         {% if session.get('id') %}
-            
-            <a class="item" id="favorite_project" style="cursor: pointer" {% if session.get('current_user')['favorite'] %}href="/project/{{ session.get('current_user')['favorite'] }}/"{% endif %} title="Favorite project"><i class="ui star icon"></i></a>
-            <div class="ui dropdown item">
-                <i class="travel icon"></i>
-                Projects
-                <i class="dropdown icon"></i>
-                <div class="menu">
-                    <a class="item" href="/projects/"><i class="list icon"></i>List</a>
-                    <div class="divider"></div>
-                    <a class="item" href="/new_project"><i class="plus icon"></i> Add new</a>
+        {% set user_arr = db.select_user_by_id(session["id"]) %}
+
+
+        <a class="item" id="favorite_project" style="cursor: pointer" {% if session.get('current_user')['favorite'] %}href="/project/{{ session.get('current_user')['favorite'] }}/" {% endif %} title="Favorite project"><i
+                class="ui star icon"></i></a>
+
+                <div>
+   
+    
+</div>
+        {% if current_project is defined %}
+
+        <div class="ui dropdown item ">
+            <h1></h1>
+
+
+           <a class="item" href="/project/{{current_project['id']}}/chats/"><i class="envelope open icon" > <span id="not_count" class="badge floating ui red label tiny" > </span> </i>  </a>
+
+            <!-- <div class="menu" id="notification">
+
+                <div class="item" id="notify_usr" name="not_id" >
+                    
                 </div>
+
+            </div> -->
+        </div>
+
+    
+       
+        <div class="ui dropdown item ">
+                  
+                  <a class="item" href="/project/{{current_project['id']}}/Notifications/"> <i class="bell icon"> <span id="notifi_count" class="badge floating ui red label tiny" > </span> </i>  </a>
+        
+        </div>
+          
+        
+       
+
+       
+        {%endif%}
+
+
+
+        <div class="ui dropdown item ">
+            <i class="travel icon"></i>
+            Projects
+            <i class="dropdown icon"></i>
+        
+            <div class="menu">
+                <a class="item" href="/projects/"><i class="list icon"></i>List</a>
+                <div class="divider"></div>
+                <a class="item" href="/new_project"><i class="plus icon"></i> Add new</a>
             </div>
-            <div class="ui dropdown item">
-                <i class="users icon"></i>Teams
-                <i class="dropdown icon"></i>
-                <div class="menu">
-                    {% for team in db.get_all_teams() %}
-                        <a class="item" href="/team/{{ team['id'] }}/"><i
-                                class="share icon"></i>{{ (team['name']) }}</a>
-                    {% endfor %}
-                    <div class="divider"></div>
-                    <a class="item" href="/create_team"><i class="plus icon"></i> Add new</a>
-                </div>
-            </div>
-        {% endif %}
+        </div>
         <div class="ui dropdown item">
-            <i class="settings icon"></i>Profile
+            <i class="users icon"></i>Teams
             <i class="dropdown icon"></i>
             <div class="menu">
+                {% for team in db.get_all_teams() %}
+                <a class="item" href="/team/{{ team['id'] }}/"><i class="share icon"></i>{{ (team['name']) }}</a>
+                {% endfor %}
+                <div class="divider"></div>
+                <a class="item" href="/create_team"><i class="plus icon"></i> Add new</a>
+            </div>
+        </div>
+        {% endif %}
+        <div class="ui dropdown item">
+
+            <i class="settings icon"></i>
+            <i class="dropdown icon"></i>
+           
+            <div class="menu">
                 {% if not session.get('id') %}
-                    <a class="item" href="/login"><i class="sign in alternate icon"></i>Login</a>
-                    <a class="item" href="/register"><i class="plus icon"></i>Register</a>
+                <a class="item" href="/login"><i class="sign in alternate icon"></i>Login</a>
+                <a class="item" href="/register"><i class="plus icon"></i>Register</a>
                 {% else %}
                 {% if session.get('current_user')['admin'] == 1 %}
-                    <a class="item" href="/admin"><i class="star icon"></i>Site Admin</a>
-                    <div class="divider"></div>
-                    <a class="item" href="/view_badges"><i class="star icon"></i>Badegs</a>
-                    <div class="divider"></div>
+                <a class="item" href="/admin"><i class="star icon"></i>Site Admin</a>
+                <div class="divider"></div>
                 {% endif %}
-                    <a class="item" href="/profile"><i class="edit icon"></i>Edit</a>
-                    <div class="divider"></div>
-                    <a class="item" href="/logout"><i class="sign out alternate icon"></i>Logout</a>
+                <a class="item" href="/profile"><i class="edit icon"></i>Edit</a>
+                <div class="divider"></div>
+                <a class="item" href="/logout"><i class="sign out alternate icon"></i>Logout</a>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+
+
+
+
+{% if current_project is defined %}
+{% set chats_arr = db.check_for_update(current_project['id']) %}
+                              
+{% for current_chat in chats_arr %}
+
+<script>
+        
+
+        const loaDoc = (chat_id) => {
+        
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', "/project/{{ current_project["id"]}}/" + "notification/", false);
+           
+            xhr.send(null);
+            var jsonResponse = xhr.responseText;
+            const j_data = JSON.parse(jsonResponse);
+            //  for (let current_chat of j_data){
+            //     appendNotification(current_chat['userName'], current_chat['newMessage'], current_chat['chatId'], current_chat['projectId']); 
+            //     console.log(current_chat);
+            // }
+            document.getElementById("not_count").innerHTML = j_data.length;
+            
+
+        };
+    //    loaDoc();
+
+    // setInterval(loaDoc, 1000, chat_id);
+      
+       var o = {{chats_arr|tojson}};
+        var length= o.length; 
+            for (let i = 0; i < length; i++) {
+                let chat_id = o[i];
+                setInterval(loaDoc, 1000, chat_id);
+
+            };
+        
+        
+        
+        
+    
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        $('.dropdown-toggle').dropdown()
+    });
+    $('.message .close')
+        .on('click', function () {
+            $(this)
+                .closest('.message')
+                .transition('fade')
+                ;
+                var index = {{chats_arr|tojson}};
+                var q =  index.findIndex(obj => obj.id=={{ current_chat['id']|tojson }});
+                var i= parseInt(q)
+                
+                // alert(i);
+               
+                //
+        })
+        ;
+
+
+</script>
+
+<script>
+
+    var all_last_time= [];
+    var file_last_time = [];
+         const File_noti = (all_last_time) => {
+            const xhr = new XMLHttpRequest();
+            let not_length = 0
+    
+            las_time = all_last_time
+            xhr.open('GET', "/project/{{ current_project["id"]}}/" + "Filenotification/", false);
+            xhr.send(null);
+            
+            var jsonResponse = xhr.responseText;
+            const j_data = JSON.parse(jsonResponse);
+             for (let file_not of j_data){
+                var t = file_not['date_added'];
+    
+                if (las_time .includes(t) ){
+                    console.log('same object retrived')
+                }
+                else{
+                    las_time.push(t);
+                    console.log(las_time);
+                    Filenotifications(file_not['userName'], file_not['Reference'],file_not['time'] ,file_not['fileName'], file_not['projectId'], null ); 
+                    all_last_time = las_time;
+                    return las_time; 
+                }
+                not_length = all_last_time.length;
+                document.getElementById("notifi_count").innerHTML = not_length;
+    
+    
+                console.log(file_not);
+            }
+            // document.getElementById("not_count").innerHTML = j_data.length;
+        };
+        // File_noti();
+    // alert(file_last_time);
+        
+    // setInterval(File_not, 1000);
+    var cred_last_time = [];
+        const credi_not = (all_last_time) => {   
+            const xhr = new XMLHttpRequest();
+    
+            las_time = all_last_time
+    
+            xhr.open('GET', "/project/{{ current_project["id"]}}/" + "cred_notification/", false);
+           
+            xhr.send(null);
+            var jsonResponse = xhr.responseText;
+            const j_data = JSON.parse(jsonResponse);
+            //  for (let cred_not of j_data){
+            //     var t = cred_not['date_added'];
+    
+            //     if (las_time .includes(t) ){
+            //         console.log('same object retrived');
+            //     }
+            //     else{
+            //         las_time.push(t);
+            //         console.log(las_time);
+            //         // Filenotifications (cred_not['userName'],'credentials',null, cred_not['projectId']); 
+            //         all_last_time = las_time;
+            //         return las_time;   
+            //     }
+            //     console.log(cred_not);
+            // }
+            // document.getElementById("not_count").innerHTML = j_data.length;
+        };
+    // credi_not();
+    setInterval( credi_not, 4000, all_last_time);
+    
+    
+    
+    var host_last_time = [];
+    
+    const host_noti = (all_last_time) => {
+            
+            const xhr = new XMLHttpRequest();
+            las_time = all_last_time
+    
+            xhr.open('GET', "/project/{{ current_project["id"]}}/" + "host_notification/", false);
+           
+            xhr.send(null);
+            var jsonResponse = xhr.responseText;
+            const j_data = JSON.parse(jsonResponse);
+            //  for (let host_not of j_data){
+            //     var t = host_not['date_added'];
+            //     // alert(t);
+            //     if (las_time .includes(t) ){
+            //         console.log('same object retrived');
+            //     }
+            //     else{
+            //         las_time.push(t);
+            //         console.log(las_time);
+            //         // Filenotifications(host_not['userName'],'hosts', null, host_not['projectId']);
+                  
+            //         all_last_time = las_time;
+            //         return las_time;
+    
+                   
+            //     }
+                
+            //     console.log(host_not);
+                
+            // }
+            // document.getElementById("not_count").innerHTML = j_data.length;
+            
+    
+        };
+        // host_noti();
+        setInterval( host_noti, 4000, all_last_time);
+    
+    
+    
+    
+        var issue_last_time = [];
+    
+        const issues_noti = (all_last_time) => {
+            
+            const xhr = new XMLHttpRequest();
+            las_time = all_last_time
+            
+            xhr.open('GET', "/project/{{ current_project["id"]}}/" + "issues_notification/", false);
+           
+            xhr.send(null);
+            var jsonResponse = xhr.responseText;
+            const j_data = JSON.parse(jsonResponse);
+            //  for (let issues_not of j_data){
+            //     let color='blue'
+    
+            //     if(issues_not['cvss']> 7){
+            //         color = 'red'
+    
+            //     }
+    
+            //     var t = issues_not['date_added'];
+            //     // alert(t);
+            //     if (las_time .includes(t) ){
+            //         console.log('same object retrived');
+            //     }
+            //     else{
+            //         las_time.push(t);
+            //         console.log(las_time);
+            //         // Filenotifications(issues_not['userName'],'issues',null, issues_not['projectId'], color); 
+                  
+            //         all_last_time = las_time;
+            //         return las_time;
+    
+                   
+            //     }
+                
+            //     console.log(issues_not);
+            // }
+            // document.getElementById("not_count").innerHTML = j_data.length;
+            
+    
+        };
+       setInterval( issues_noti, 4000, all_last_time);
+    
+        // issues_noti();
+    
+        var net_last_time = [];
+    
+        const network_noti = (all_last_time) => {
+          
+            // alert(last_time);
+            const xhr = new XMLHttpRequest();
+            las_time = all_last_time
+    
+            xhr.open('GET', "/project/{{ current_project["id"]}}/" + "network_notification/", false);
+           
+            xhr.send(null);
+            var jsonResponse = xhr.responseText;
+            const j_data = JSON.parse(jsonResponse);
+            // for (let network_not of j_data){
+            //     var t = network_not['date_added'];
+            //     // alert(t);
+            //     if (las_time .includes(t) ){
+            //         console.log('same object retrived');
+            //     }
+            //     else{
+            //         las_time.push(t);
+            //         console.log(las_time);
+            //         // Filenotifications(network_not['userName'],'networks',  network_not['ip'] , network_not['projectId']);
+            //         all_last_time = las_time;
+            //         return las_time;
+    
+                   
+            //     }
+            //     console.log(network_not);
+            // }
+    
+            // last_time = las_time;
+            // return las_time;
+            // alert (last_time);
+            // alert (las_time);
+    
+    
+            // document.getElementById("not_count").innerHTML = j_data.length;
+            
+    
+        };
+        // alert(last_time);
+        
+       setInterval( network_noti, 4000, all_last_time);
+
+    setInterval( File_noti, 100, all_last_time);
+
+    // alert(last_time);
+    // network_noti(last_time);
+    
+    // setInterval(function () {
+        
+    //     issues_noti();
+    //     host_noti();
+    //     credi_not();
+    //     File_noti();
+    
+    // }, 1000);
+        // setInterval(File_not, 1000);
+        // addEventListener("load", () => {
+        //     Notification.requestPermission().then(perm => {
+        //         if(perm === "granted"){
+        //             const notification = new Notification(" Olaa",{
+        //                 body: "mii amo betty",
+        //                 data: {hello: "world"},
+        //                 icon: "/static/images/icon_mini_good.png",
+                        
+    
+    
+        //             })
+        //             notification.addEventListener("close", e => {
+        //                 console.log(e)
+        //             })
+    
+        //         }
+        //     })
+        // })
+        // addEventListener("load", () => {
+        //         function registerServiceWorker() {
+        //         return navigator.serviceWorker
+        //             .register('/service-worker.js')
+        //             .then(function (registration) {
+        //                 console.log('Service worker successfully registered.');
+        //                 return registration;
+        //             })
+        //             .catch(function (err) {
+        //                 console.error('Unable to register service worker.', err);
+        //             });
+        //     }
+        // })
+    //     let length = all_last_time.length;
+    // alert(length);
+    addEventListener('load', async() => {
+      let sw = await navigator.serviceWorker.register('./static/js/serviceWorker.js')
+        // .then(function (registration) {
+        //   console.log('Service worker successfully registered.');
+        //   return registration;
+        // })
+        console.log(sw);
+
+        // .catch(function (err) {
+        //   console.error('Unable to register service worker.', err);
+        // });
+
+    });
+
+    async function subscribe(){
+       
+      let sw = await navigator.serviceWorker.ready;
+      let push = await sw.pushManager.subscribe({
+          userVisibleOnly:true,
+          applicationServerKey: 
+              'BDnXnISH3LQKMyw_OSBnQ6qAoiR48rje2bAbX2viw-FKXzpTwAnNt6MIwYnsK5QBWq7GEMBuEbuQbpMBjlJuQAE',
+           
+      });
+      console.log(JSON.stringify(push));
+    //   return new Promise(function (resolve, reject) {
+    //     const permissionResult = Notification.requestPermission(function (result) {
+    //       resolve(result);
+    //     });
+    //     if (permissionResult) {
+    //       permissionResult.then(resolve, reject);
+    //     }
+    // });
+}
+subscribe();
+
+
+// async function subscribe(){
+       
+//        let sw = await navigator.serviceWorker.ready.then((ServiceWorkerRegistration) => {
+//             serviceWorkerRegistration.pushManager
+//                 .getSubscription()
+//                 sendSubscriptionToServer(subscription);
+
+//                 showCurlCommand(subscription);
+//        });
+//        let push = await sw.pushManager.subscribe({
+//            userVisibleOnly:true,
+//            applicationServerKey: 
+//                'BDnXnISH3LQKMyw_OSBnQ6qAoiR48rje2bAbX2viw-FKXzpTwAnNt6MIwYnsK5QBWq7GEMBuEbuQbpMBjlJuQAE',
+            
+//        })
+//        console.log(JSON.stringify(push))
+//        return new Promise(function (resolve, reject) {
+//          const permissionResult = Notification.requestPermission(function (result) {
+//            resolve(result);
+//          });
+//          if (permissionResult) {
+//            permissionResult.then(resolve, reject);
+//          }
+//      });
+//  }
+
+    // subscribe();
+
+
+
+    // We need the service worker registration to check for a subscription
+   
+   
+//     async function subscribe(){
+//         let push = await navigator.serviceWorker.ready.then((serviceWorkerRegistration) => {
+//   // Do we already have a push message subscription?
+//         serviceWorkerRegistration.pushManager
+//     .getSubscription()
+
+   
+//     .catch((err) => {
+//       console.error(`Error during getSubscription(): ${err}`);
+//     });
+// });
+// console.log('hello')
+
+//     }
+//     subscribe();
+
+
+
+    // function askPermission() {
+    //   return new Promise(function (resolve, reject) {
+    //     const permissionResult = Notification.requestPermission(function (result) {
+    //       resolve(result);
+    //     });
+    
+    //     if (permissionResult) {
+    //       permissionResult.then(resolve, reject);
+    //     }
+    //   }).then(function (permissionResult) {
+    //     if (permissionResult !== 'granted') {
+    //       throw new Error("We weren't granted permission.");
+    //     }
+    //   });
+    // }
+    // askPermission();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //     function registerServiceWorker() {
+    //   return navigator.serviceWorker
+    //     .register('/static/js/serviceWorker.js')
+    //     .then(function (registration) {
+    //       console.log('Service worker successfully registered.');
+    //       return registration;
+    //     })
+    //     .catch(function (err) {
+    //       console.error('Unable to register service worker.', err);
+    //     });
+    // }
+    // registerServiceWorker();
+    
+    // @param {string} base64String a public vavid key
+    
+    // function urlBase64ToUint8Array(base64String) {
+    //     var padding = '='.repeat((4 - base64String.length % 4) % 4);
+    //     var base64 = (base64String + padding)
+    //         .replace(/\-/g, '+')
+    //         .replace(/_/g, '/');
+    
+    //     var rawData = window.atob(base64);
+    //     var outputArray = new Uint8Array(rawData.length);
+    
+    //     for (var i = 0; i < rawData.length; ++i) {
+    //         outputArray[i] = rawData.charCodeAt(i);
+    //     }
+    //     return outputArray;
+    // }
+    // function askPermission() {
+    //   return new Promise(function (resolve, reject) {
+    //     const permissionResult = Notification.requestPermission(function (result) {
+    //       resolve(result);
+    //     });
+    
+    //     if (permissionResult) {
+    //       permissionResult.then(resolve, reject);
+    //     }
+    //   }).then(function (permissionResult) {
+    //     if (permissionResult !== 'granted') {
+    //       throw new Error("We weren't granted permission.");
+    //     }
+    //   });
+    // }
+    // askPermission();
+    // function subscribeUserToPush() {
+    //   return navigator.serviceWorker
+    //     .register('/static/js/serviceWorker.js')
+    //     .then(function (registration) {
+    //       const subscribeOptions = {
+    //         userVisibleOnly: true,
+    //         applicationServerKey: urlBase64ToUint8Array(
+    //           'BDnXnISH3LQKMyw_OSBnQ6qAoiR48rje2bAbX2viw-FKXzpTwAnNt6MIwYnsK5QBWq7GEMBuEbuQbpMBjlJuQAE',
+    //         ),
+    //       };
+    
+    //       return registration.pushManager.subscribe(subscribeOptions);
+    //     })
+    //     .then(function (pushSubscription) {
+    //       console.log(
+    //         'Received PushSubscription: ',
+    //         JSON.stringify(pushSubscription),
+    //       );
+    //       return pushSubscription;
+    //     });
+    // }
+    
+    // subscribeUserToPush();
+    
+   
+
+    // const subscriptionObject = {"endpoint":"https://updates.push.services.mozilla.com/wpush/v2/gAAAAABkH…-5QuZ0h04tBJzERQGLhn1ah398vDxI74BEdAis179MiPJj4nsOhQVaz3tjQE",
+    // "expirationTime":null,
+    // "keys":{
+    //   "auth":"Q0ho9vzI3Ane2sZFZNgbcg",
+    //   "p256dh":"BJ-5kghgI85_64ApZ_wBV5yowTmH2PoSXIvXqzzBx_wGjUaTwrEkMqX6NlAO4ZwIIc5JjDvNqPW4LJff-H9udHg"
+    // }}
+
+//   const subscriptionObject = {
+//   endpoint: pushSubscription.endpoint,
+//   keys: {
+//     p256dh: pushSubscription.getKeys('p256dh'),
+//     auth: pushSubscription.getKeys('auth'),
+//   },
+// };
+
+// The above is the same output as:
+
+// const subscriptionObjectToo = JSON.stringify(pushSubscription);
+// function sendSubscriptionToBackEnd(subscription) {
+//   return fetch('/api/save-subscription/', {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify(subscription),
+//   })
+//     .then(function (response) {
+//       if (!response.ok) {
+//         throw new Error('Bad status code from server.');
+//       }
+
+//       return response.json();
+//     })
+//     .then(function (responseData) {
+//       if (!(responseData.data && responseData.data.success)) {
+//         throw new Error('Bad response from server.');
+//       }
+//     });
+// }
+// sendSubscriptionToBackEnd(subscription);
+
+// app.post('/api/save-subscription/', function (req, res) {
+//   if (!isValidSaveRequest(req, res)) {
+//     return;
+//   }
+
+//   return saveSubscriptionToDatabase(req.body)
+//     .then(function (subscriptionId) {
+//       res.setHeader('Content-Type', 'application/json');
+//       res.send(JSON.stringify({data: {success: true}}));
+//     })
+//     .catch(function (err) {
+//       res.status(500);
+//       res.setHeader('Content-Type', 'application/json');
+//       res.send(
+//         JSON.stringify({
+//           error: {
+//             id: 'unable-to-save-subscription',
+//             message:
+//               'The subscription was received but we were unable to save it to our database.',
+//           },
+//         }),
+//       );
+//     });
+// });
+
+// const isValidSaveRequest = (req, res) => {
+//   // Check the request body has at least an endpoint.
+//   if (!req.body || !req.body.endpoint) {
+//     // Not a valid subscription.
+//     res.status(400);
+//     res.setHeader('Content-Type', 'application/json');
+//     res.send(
+//       JSON.stringify({
+//         error: {
+//           id: 'no-endpoint',
+//           message: 'Subscription must have an endpoint.',
+//         },
+//       }),
+//     );
+//     return false;
+//   }
+//   return true;
+// };
+    // const requestNotificationPermission = async () => {
+    //     addEventListener("load", () => {
+    //         const permission = await window.Notification.requestPermission();
+    
+    //     })
+    //     // value of permission can be 'granted', 'default', 'denied'
+    //     // granted: user has accepted the request
+    //     // default: user has dismissed the notification permission popup by clicking on x
+    //     // denied: user has denied the request.
+    //     if(permission !== 'granted'){
+    //         throw new Error('Permission not granted for Notification');
+    //     }
+    // }
+    // const mainnn = async () => {
+        
+    //     const swRegistration = await registerServiceWorker();
+    //     const permission =  await requestNotificationPermission();
+    // }
+    // mainnn();
+    // const title = 'Simple Title';
+    
+    // const options = {
+    //   body: 'Simple piece of body text.\nSecond line of body text :)',
+    // };
+    
+    // subscribeUserToPush.showNotification(title, options);
+    // subscribeUserToPush.showNotification('ooooo');
+    
+        $('.card .button')
+      .on('click', function() {
+        $(this)
+          .closest('.card')
+          .transition('fade')
+        ;
+      })
+    ;
+    
+    
+    </script>
+    
+    <!-- <script src="/static/js/push.js"></script> -->
+    <!-- https://developer.mozilla.org/en-US/docs/Web/API/PushManager/getSubscription -->
+    <!-- https://github.com/GoogleChrome/samples/blob/gh-pages/push-messaging-and-notifications/index.html -->
+{%endfor%}
+
+{%endif%}
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script> -->
