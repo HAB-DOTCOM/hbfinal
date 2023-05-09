@@ -25,9 +25,13 @@
         } else if (path.includes('/settings/')) {
             elem_id = 'menu_settings';
         }
+        ;
         console.log(elem_id);
         updateSidebar();
+        document.getElementById(elem_id).classList.add("active");
 
+        $('#sidebar').sticky({context: '#segment_id'});
+        $('#up_down_buttons').sticky({context: '#segment_id'});
         $.getJSON('/project/{{ current_project["id"] }}/stats', function(project_counters) {
             $('#menu_hosts .label').text(project_counters['hosts_counter'] || '');
             $('#menu_services .label').text(project_counters['services_counter'] || '');
@@ -37,7 +41,8 @@
             $('#menu_creds .label').text(project_counters['creds_counter'] || '');
         });
 
-       
+
+
     });
 
     function updateSidebar() {
@@ -106,13 +111,13 @@
             console.log('Error: ' + error);
         }
     });
-}
-
+};
+updateSidebar();
 
                     // Call updateSidebar every 30 seconds to update counters
-                    setInterval(updateSidebar, 1000);
-</script>
+                    // setInterval(updateSidebar, 1000);
 
+</script>
 
 <style>
     .ui.menu:last-child {
@@ -123,7 +128,6 @@
         height: calc(100% - 26px);
     }
 </style>
-
 {% set project_counters = db.select_project_stats_divbar(current_project['id']) %}
 <div class="ui sticky" id="sidebar" style="padding-right: 15px; z-index: 999;">
     <div class="ui vertical icon menu sidebar_menu" style="margin-top: 0px;" id="sidebar_menu">

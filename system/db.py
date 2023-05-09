@@ -11,10 +11,11 @@ import threading
 import re
 import psycopg2
 from base64 import b64encode
-import os
 #import qmarkpg
 from markdownify import markdownify
 from datetime import datetime
+from datetime import date
+from flask import flash
 
 class Database:
     db_path = config_dict()['database']['path']
@@ -203,26 +204,25 @@ class Database:
         self.conn.commit()
         return
 
-    
     def insert_team(self, name, description, user_id):
         team_id = gen_uuid()
+        date_added = datetime.now().strftime('%Y-%m-%d %H:%M:%S') # get the current date and time
         self.execute(
-            "INSERT INTO Teams(id,admin_id,name,description,admin_email,users) "
-            "VALUES (?,?,?,?,(SELECT email FROM Users WHERE id=? LIMIT 1),?)",
+            "INSERT INTO Teams(id, admin_id, name, description, admin_email, users, date_added) "
+            "VALUES (?, ?, ?, ?, (SELECT email FROM Users WHERE id=? LIMIT 1), ?, ?)",
             (team_id,
-             user_id,
-             name,
-             description,
-             user_id,
-             '{{"{}":"admin"}}'.format(user_id))  # initiation of json dict
+            user_id,
+            name,
+            description,
+            user_id,
+            '{{"{}":"admin"}}'.format(user_id),
+            date_added)
         )
         self.conn.commit()
 
         self.insert_log('Team "{}" was created!'.format(name), teams=[team_id])
 
         return str(team_id)
-
-
 
 
     def delete_team(self, team_id):
@@ -518,15 +518,12 @@ class Database:
         result = self.return_arr_dict()
         return result
 
-
     def select_projects(self, project_id):
-        print(f"Project ID: {project_id}") # Print the value of project_id for debugging purposes
         self.execute(
             '''SELECT * FROM Projects WHERE id=? ''',
             (project_id,))
         result = self.return_arr_dict()
         return result
-
     def get_project(self, project_id):
         self.execute(
             '''SELECT * FROM Projects WHERE id=? ''',
@@ -1744,9 +1741,8 @@ class Database:
             json.dumps(services), filetype, user_id, storage,
             base64.b64encode(data).decode('charmap'), date_added)
         )
-        self.execute("INSERT INTO Logs (project_id, message) VALUES (?, ?)", (project_id, f"Added new file {filename}"))
         self.conn.commit()
-        
+        self.insert_log('Added new file {}'.format(filename))
         return file_id
 
 
@@ -4534,53 +4530,320 @@ class Database:
         self.insert_log('User {} added project {} to favorite.'.format(user_id, project_id))
 
 
-   
-    def insert_badge(self, name, image_path, score=0, admin_only=False):
-        badge_id = gen_uuid()
-        self.execute(
-            "INSERT INTO Badges(id, name, image, score, admin_only) VALUES (?,?,?,?,?)",
-            (badge_id, name, image_path, score, admin_only)
-        )
-        self.conn.commit()
+# notification Start
 
-        # If the badge is admin-only, insert it with a default value of 0 for all users
-        if admin_only:
-            users = self.select_all_users()
-            for user in users:
-                self.insert_user_badge(user['id'], badge_id)
+    def select_id_from_project(self,project_id):
+        self.execute('''SELECT id FROM Chats WHERE project_id=?''', 
+                     (project_id,))
+        
+        id= self.return_arr_dict()
+        return id
 
-        return badge_id
+    def check_for_update(self, project_id):
+       
+        id1= self.select_id_from_project(project_id)
+    
+        sql1=[]
+        for id in id1:
+            id2= json.dumps(id['id'])
+            id3 = json.loads(id2)
+            self.execute('''SELECT time FROM Messages WHERE chat_id=? ORDER BY time DESC LIMIT 1 ''', (id3,))
+            sql1 += self.return_arr_dict()
+        last_update = 0
+        message = []
+        for time in sql1:
+            time1 = json.dumps(time['time'])
+            if int(time1) > int(last_update):
+                last_update = time1
+                self.execute('''SELECT * FROM Messages WHERE time=?''',  (time1,) )
+                message += self.return_arr_dict()
+        return message
+    
+    def pop_notification(self, project_id, i) :
+        array=self.check_for_update(project_id)
+       
+        array.pop(i)
+        return array 
+    
+
+    def check_update_in_all(self, project_id):
+        # results=[]
+        
+        sql ='''
+            SELECT 
+            -- Credentials stats
+            (SELECT date_added FROM Credentials where project_id=? ORDER BY date_added DESC LIMIT 1) as not_credentials ,
+            (SELECT date_added FROM Hosts where project_id=? ORDER BY date_added DESC LIMIT 1)as not_hosts,
+            (SELECT date_added FROM Issues where project_id=? ORDER BY date_added DESC LIMIT 1)as not_issues,
+            (SELECT date_added FROM Files where project_id=? ORDER BY date_added DESC LIMIT 1)as not_files ,
+            (SELECT date_added FROM Notes where project_id=? ORDER BY date_added DESC LIMIT 1)as not_notes,
+            (SELECT date_added FROM Chats where project_id=? ORDER BY date_added DESC LIMIT 1)as not_chats,
+            (SELECT date_added FROM Files where project_id=? and type='report' ORDER BY date_added DESC LIMIT 1)as not_reports,
+            (SELECT date_added FROM Networks where project_id=? ORDER BY date_added DESC LIMIT 1)as not_networks 
+         
+            '''
+  
+        self.execute(sql, [project_id] * 8)
+        results = self.return_arr_dict()
+        return results
+        
+
+                
+       
+    def check_update_file(self, project_id):
+        c= []
+        ti = []
+        f=[]
+        results = self.check_update_in_all(project_id)
+        time3 = 0.0
+        file_notification= results[0]['not_files']
+        if  file_notification != None:
+            a=json.dumps([file_notification])
+            b= json.loads(a)
+            tim = datetime.strptime(a,'["%Y-%m-%d %H:%M:%S"]')
+            time2 = datetime.timestamp(tim)
+        
+            if time2 > time3:
+                time3 = time2
+                ti += b     
+            
+
+        for t in ti:
+            sql = ''' SELECT * FROM Files WHERE date_added=? '''
+            self.execute(sql, b)
+            c += self.return_arr_dict()
+        return c
+    def insert_file_notification(self, project_id):
+        update = self.check_update_file(project_id)
+        
+        for current_update in update:
+            sql1= '''
+            SELECT  date_added FROM notifications
+            '''
+            self.execute(sql1)
+            j= self.return_arr_dict()
+            a=json.dumps(j)
+            # b= json.loads(a)
+            # for i in j:
+            # k= '2023-03-15 11:44:04'  
+            if current_update['date_added'] in a :
+                k= "already existts"
+            else:
+                    
+                sql= '''
+                    INSERT INTO notifications(date_added,Description,user_id,Reference,project_id,count) VALUES (?,?,?,?,?,?)
+                
+                    '''
+                d= current_update['date_added'], current_update['filename'],current_update['user_id'],'files',current_update['project_id'], 9
+                self.execute(sql, d)
+                self.conn.commit()
+                k="inserted"
+        return ''
+    def view_all_not(self, project_id):
+        sql = '''
+        SELECT  * FROM notifications ORDER BY date_added ASC
+        '''
+        self.execute(sql)
+        j= self.return_arr_dict()
+        a=json.dumps(j)
+        b= json.loads(a)
+        return j
 
 
-    def select_all_badges(self):
-        self.execute('SELECT * FROM Badges')
-        result = self.return_arr_dict()
-        return result
-    def delete_badge(self, badge_id):
-        self.execute('DELETE FROM Badges WHERE id = ?', (str(badge_id),))
-        self.commit()
+
+    
+    def check_update_credentials(self, project_id):
+        results = self.check_update_in_all(project_id)
+        c= []
+        time3 = 0.0
+        cred_notification= results[0]['not_credentials']
+        if  cred_notification != None:
+            a=json.dumps([cred_notification])
+            b= json.loads(a)
+        
+            time = datetime.strptime(a,'["%Y-%m-%d %H:%M:%S"]')
+            time2 = datetime.timestamp(time)
+        
+            if time2 > time3:
+                        
+                time3 = time2
+                sql = ''' SELECT * FROM Credentials WHERE date_added=? '''
+                self.execute(sql, b)
+                c += self.return_arr_dict()
+        return c
+    def insert_cred_notification(self, project_id):
+        update = self.check_update_credentials(project_id)
+        
+        for current_update in update:
+            sql1= '''
+            SELECT  date_added FROM notifications
+            '''
+            self.execute(sql1)
+            j= self.return_arr_dict()
+            a=json.dumps(j)
+            # b= json.loads(a)
+            # for i in j:
+            # k= '2023-03-15 11:44:04'  
+            if current_update['date_added'] in a :
+                k= "already existts"
+            else:
+                    
+                sql= '''
+                    INSERT INTO notifications(date_added,Description,user_id,Reference,project_id,count) VALUES (?,?,?,?,?,?)
+                
+                    '''
+                d= current_update['date_added'], current_update['login'],current_update['user_id'],'credentials',current_update['project_id'], 9
+                self.execute(sql, d)
+                self.conn.commit()
+                k="inserted"
+        return ''
+    def check_update_hosts(self, project_id):
+        results = self.check_update_in_all(project_id)
+        c= []
+        time3 = 0.0
+        hosts_notification= results[0]['not_hosts']
+        if  hosts_notification != None:
+            a=json.dumps([hosts_notification])
+            b= json.loads(a)
+        
+            time = datetime.strptime(a,'["%Y-%m-%d %H:%M:%S"]')
+            time2 = datetime.timestamp(time)
+        
+            if time2 > time3:
+                        
+                time3 = time2
+                sql = ''' SELECT * FROM Hosts WHERE date_added=? '''
+                self.execute(sql, b)
+                c += self.return_arr_dict()
+        return c
+    def insert_hosts_notification(self, project_id):
+        update = self.check_update_hosts(project_id)
+        
+        for current_update in update:
+            sql1= '''
+            SELECT  date_added FROM notifications
+            '''
+            self.execute(sql1)
+            j= self.return_arr_dict()
+            a=json.dumps(j)
+            # b= json.loads(a)
+            # for i in j:
+            # k= '2023-03-15 11:44:04'  
+            if current_update['date_added'] in a :
+                k= "already existts"
+            else:
+                    
+                sql= '''
+                    INSERT INTO notifications(date_added,Description,user_id,Reference,project_id,count) VALUES (?,?,?,?,?,?)
+                
+                    '''
+                d= current_update['date_added'], current_update['ip'],current_update['user_id'],'hosts',current_update['project_id'], 9
+                self.execute(sql, d)
+                self.conn.commit()
+                k="inserted"
+        return ''
+    
+    def check_update_issues(self, project_id):
+        results = self.check_update_in_all(project_id)
+        c= []
+        time3 = 0.0
+        issues_notification= results[0]['not_issues']
+        if  issues_notification != None:
+            a=json.dumps([issues_notification])
+            b= json.loads(a)
+        
+            time = datetime.strptime(a,'["%Y-%m-%d %H:%M:%S"]')
+            time2 = datetime.timestamp(time)
+        
+            if time2 > time3:
+                        
+                time3 = time2
+                sql = ''' SELECT * FROM Issues WHERE date_added=? '''
+                self.execute(sql, b)
+                c += self.return_arr_dict()
+           
+        return c
+    def insert_issues_notification(self, project_id):
+        update = self.check_update_issues(project_id)
+        
+        for current_update in update:
+            sql1= '''
+            SELECT  date_added FROM notifications
+            '''
+            self.execute(sql1)
+            j= self.return_arr_dict()
+            a=json.dumps(j)
+            # b= json.loads(a)
+            # for i in j:
+            # k= '2023-03-15 11:44:04'  
+            if current_update['date_added'] in a :
+                k= "already existts"
+            else:
+                    
+                sql= '''
+                    INSERT INTO notifications(date_added,Description,user_id,Reference,project_id,count) VALUES (?,?,?,?,?,?)
+                
+                    '''
+                d= current_update['date_added'], current_update['name'],current_update['user_id'],'issues',current_update['project_id'], 9
+                self.execute(sql, d)
+                self.conn.commit()
+                k="inserted"
+        return ''
+    
+    def check_update_network(self, project_id):
+        results = self.check_update_in_all(project_id)
+        c= []
+        time3 = 0.0
+        networks_notification= results[0]['not_networks']
+        if networks_notification != None:
+            a=json.dumps([networks_notification])
+            b= json.loads(a)
+        
+            time = datetime.strptime(a,'["%Y-%m-%d %H:%M:%S"]')
+            time2 = datetime.timestamp(time)
+        
+            if time2 > time3:
+                        
+                time3 = time2
+                sql = ''' SELECT * FROM Networks WHERE date_added=? '''
+                self.execute(sql, b)
+                c += self.return_arr_dict()
+            else:
+                c += []
+        return c
 
 
+    def insert_network_notification(self, project_id):
+        update = self.check_update_network(project_id)
+        
+        for current_update in update:
+            sql1= '''
+            SELECT  date_added FROM notifications
+            '''
+            self.execute(sql1)
+            j= self.return_arr_dict()
+            a=json.dumps(j)
+            # b= json.loads(a)
+            # for i in j:
+            # k= '2023-03-15 11:44:04'  
+            if current_update['date_added'] in a :
+                k= "already existts"
+            else:
+                    
+                sql= '''
+                    INSERT INTO notifications(date_added,Description,user_id,Reference,project_id,count) VALUES (?,?,?,?,?,?)
+                
+                    '''
+                d= current_update['date_added'], current_update['ip'],current_update['user_id'],'networks',current_update['project_id'], 9
+                self.execute(sql, d)
+                self.conn.commit()
+                k="inserted"
+        return ''
+    def inc(self):
+        self.count +=1
+        self.js.document.getElementById('co').innerHTML = self.count
 
-    def insert_user_badge(self, user_id, badge_id, status=0):
-        user_badge_id = gen_uuid()
-        self.execute(
-            "INSERT INTO User_Badges(id, user_id, badge_id, status) VALUES (?,?,?,?)",
-            (user_badge_id, user_id, badge_id, status)
-        )
-        self.conn.commit()
-        return user_badge_id
-    def select_user_badges(self, user_id):
-        self.execute('SELECT User_Badges.status, Badges.name, Badges.image, User_Badges.badge_id FROM User_Badges JOIN Badges ON User_Badges.badge_id = Badges.id WHERE user_id = ?', (str(user_id),))
-        result = self.return_arr_dict()
-        return result
 
-
-    def update_user_badge_status(self, user_id, badge_id, status):
-        self.execute(
-            "UPDATE User_Badges SET status = ? WHERE user_id = ? AND badge_id = ?",
-            (status, str(user_id), str(badge_id))
-        )
-        self.conn.commit()
-
-
+          
+    
+# notification

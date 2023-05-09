@@ -340,9 +340,6 @@
                         console.log('Thing was not saved to the database.');
                     }
                 }
-          
-
-
             </script>
             <style>
                 tr.odd {
@@ -361,25 +358,25 @@
                 }
             </style>
             <div class="ui container" style="width: 100%;float:left;">
-                <table id="dataTable" class="ui table" style="width: 100%">
+                <table id="issues_list" class="ui table" style="width: 100%">
                     <thead id="issues_header">
-                        <tr id="table_header">
-                            <th style="width: 20px;">
-                                <div class="ui fitted big checkbox">
-                                    <input name="select_all" style="transform: scale(1.2); margin-left: 4px;" value="1" id="example-select-all" type="checkbox">
-                                    <label></label>
-                                </div>
-                            </th>
-                            <th style="width: 200px;"><h4>name</h4></th>
-                            <th style="width: 800px;"><h4>description</h4></th>
-                            <th style="min-width: 300px;"><h4>services</h4></th>
-                            <th style="min-width: 100px;"><h4>CVSS</h4></th>
-                            <th><h4>status</h4></th>
-                            <th><h4>action</h4></th>
-                        </tr>
+                    <tr id="table_header">
+                        <th style="width: 20px;">
+                            <div class="ui fitted big checkbox">
+                                <input name="select_all" style="transform: scale(1.2); margin-left: 4px;" value="1" id="example-select-all" type="checkbox">
+                                <label></label>
+                            </div>
+                        </th>
+                        <th style="width: 200px;"><h4>name</h4></th>
+                        <th style="width: 800px;"><h4>description</h4></th>
+                        <th style="min-width: 300px;"><h4>services</h4></th>
+                        <th style="min-width: 100px;"><h4>CVSS</h4></th>
+                        <th><h4>status</h4></th>
+                        <th><h4>action</h4></th>
+                    </tr>
                     </thead>
                     <tbody>
-                        {% for issue in issues %}
+                    {% for issue in issues %}
                         <tr>
                             <td data-value="{{ issue['id'] }}" id="checkbox_data">
                                 <div class="ui fitted big checkbox">
@@ -394,62 +391,36 @@
                                     {% set addresses = json_unpack(issue['services']) %}
                                     {% set counter = [0] %}
                                     {% for port_id in addresses %}
-                                    {% set port = db.select_port(port_id)[0] %}
-                                    {% for host in addresses[port_id] %}
-                                    {% if counter[0] < 5 %}
-                                    {% if host=="0" or host==0 %}
-                                    {% set ip = db.select_host_by_port_id(port_id)[0] %}
-                                    <li>{{ (ip['ip']) }}{% if port['port'] != 0 %}:{{ (port['port']) }}{% endif %}</li>
-                                    {% else %}
-                                    {% set hostname = db.select_hostname(host)[0] %}
-                                    <li>{{ (hostname['hostname']) }}{% if port['port'] != 0 %}:{{ (port['port']) }}{% endif %}</li>
-                                    {% endif %}
-                                    {% endif %}
-                                    {% if counter.append(counter.pop() + 1) %}{% endif %}
-                                    {% endfor %}
+                                        {% set port = db.select_port(port_id)[0] %}
+                                        {% for host in addresses[port_id] %}
+                                            {% if counter[0] < 5 %}
+                                                {% if host=="0" or host==0 %}
+                                                    {% set ip = db.select_host_by_port_id(port_id)[0] %}
+                                                    <li>{{ (ip['ip']) }}{% if port['port'] != 0 %}:{{ (port['port']) }}{% endif %}</li>
+                                                {% else %} 
+                                                    {% set hostname = db.select_hostname(host)[0] %}
+                                                    <li>{{ (hostname['hostname']) }}{% if port['port'] != 0 %}:{{ (port['port']) }}{% endif %}</li>
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if counter.append(counter.pop() + 1) %}{% endif %}
+                                        {% endfor %}
                                     {% endfor %}
                                     {% if counter[0] >5 %}
-                                    ...<br/>
-                                    {{ counter[0] }} hosts at all!
+                                        ...<br/>
+                                        {{ counter[0] }} hosts at all!
                                     {% endif %}
                                 </ul>
                             </td>
                             <td>{{ (issue['cvss']) }}</td>
                             <td>{{ (issue['status']) }}</td>
-                            <td><a class="ui button blue" href="/project/{{ current_project['id'] }}/issue/{{ issue['id'] }}/">Open</a></td>
+                            <td><a class="ui button blue"
+                                   href="/project/{{ current_project['id'] }}/issue/{{ issue['id'] }}/">Open</a></td>
                         </tr>
-                        {% endfor %}
+                    {% endfor %}
                     </tbody>
                 </table>
-         
-            
+            </div>
         </div>
-        <script>
-                $(document).ready(function(){
-                    $('#dataTable').DataTable({
-                        "padding":true,
-                        "pageLength":10
-                    });
-                });
-                  function getIssues(pageNumber) {
-                fetch(`/project/${project_id}/issues/?page=${pageNumber}`)
-                    .then(response => response.text())
-                    .then(data => {
-                    const issuesList = document.getElementById('issues_list');
-                    issuesList.innerHTML = data;
-                    });
-                }
-                const pageLinks = document.querySelectorAll('.page-link');
-
-                for (let i = 0; i < pageLinks.length; i++) {
-                pageLinks[i].addEventListener('click', () => {
-                    const pageNumber = parseInt(pageLinks[i].getAttribute('data-page-number'));
-                    getIssues(pageNumber);
-                });
-                }
-        </script>
-
-    
         {% include 'footer.html' %}
     </div>
 </div>

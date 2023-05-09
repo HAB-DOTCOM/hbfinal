@@ -4,10 +4,6 @@
 
 <body>
     <script>
-
-     
-
-        
         $(function () {
             $('.ui.fluid.search.dropdown').dropdown({
                 fullTextSearch: "exact"
@@ -30,17 +26,7 @@
         <a class="item active" data-tab="user">
             User Management
         </a>
-        <a class="item" href="/list_allprojects/">
-            Score Projects
-          </a>
-         
-          
-
-        
     </div>
-    
-
-  
     <div class="ui tab active" data-tab="user" style="padding-top:5px;">
         <form class="ui form" action="/admin" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
@@ -122,8 +108,6 @@
     </div>
     {% endif %}
 
-    
-    
 </body>
 
 </html>

@@ -31,12 +31,6 @@ import datetime
 from uuid import UUID as check_uuid
 from .db import Database
 from .config_load import config_dict
-from wtforms import BooleanField
-from wtforms.widgets import CheckboxInput
-from wtforms import widgets
-
-from flask_wtf.file import FileAllowed
-
 
 DB = Database(config_dict())
 
@@ -1608,14 +1602,3 @@ class ScanvusForm(FlaskForm):
     host_id = StringField("new_host", default="-")
     ip = StringField("ip", default="")
     host_description = StringField("host_description", default="")
-
-
-class NewBadgeForm(FlaskForm):
-    name = StringField("Name", validators=[validators.DataRequired()])
-    image = FileField(
-        "Image", validators=[
-            FileRequired(),
-            FileAllowed(["jpg", "jpeg", "png", "gif"], "Images only!")]
-        )
-    admin_only = BooleanField("Admin Only", default=False, widget=widgets.CheckboxInput())
-    score = FloatField("Score")
